@@ -7,10 +7,12 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
-set(CMAKE_EXE_LINKER_FLAGS "-static")
 set(CMAKE_EXECUTABLE_ENABLE_EXPORTS, TRUE)
-set(CMAKE_C_COMPILER /usr/aarch64-linux-gnu/bin/aarch64-none-linux-gnu-gcc)
-set(CMAKE_CXX_COMPILER /usr/aarch64-linux-gnu/bin/aarch64-none-linux-gnu-g++)
+
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(FFMPEG REQUIRED libavformat libavcodec libswresample libavutil)
+pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 # Build debug version
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -26,14 +28,9 @@ endif()
 # Include directories
 set(VIDC_TEST_INCLUDES
     inc/
-    third-parties/jsoncpp/output/include
-    third-parties/ffmpeg/output/include
-)
+    ${JSONCPP_INCLUDE_DIRS}
+    ${FFMPEG_INCLUDE_DIRS})
 include_directories(${VIDC_TEST_INCLUDES})
-link_directories(
-    third-parties/jsoncpp/output/lib
-    third-parties/ffmpeg/output/lib
-)
 
 set(VIDC_TEST_SOURCES
     IrisTestApp.cpp
@@ -48,4 +45,4 @@ set(VIDC_TEST_SOURCES
 )
 
 add_executable(iris_v4l2_test ${VIDC_TEST_SOURCES})
-target_link_libraries(iris_v4l2_test avformat avcodec swresample avutil pthread jsoncpp)
+target_link_libraries(iris_v4l2_test ${FFMPEG_LIBRARIES} pthread ${JSONCPP_LIBRARIES})
